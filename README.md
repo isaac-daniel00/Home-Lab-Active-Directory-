@@ -135,10 +135,37 @@ This list should be saved in a ".txt" file and can be viewed via notepad.
 ## Create users with Powershell Script
 
 This step we will use the list that we created to make usernames for all the names in the list. The code that we will use can be found by using this link https://github.com/joshmadakor1/AD_PS/blob/master/1_CREATE_USERS.ps1. This code will be run using Windows Powershell ISE as an administrator. Before we run the code we will have to use the following command:
-```bash
+```
 Set-ExecutionPolicy Unrestricted
 ```
-Once we do that we can copy and paste the code from the link into the new script. Make sure that the name of your list is implemented into the code or it won't work. Also make sure that you change to the corresponding directory that you saved the list in then run the code. The code will take a min or two since there is 1000 names on the list. Once it is done we can check the "Active Directory Users and Computers" window then use the dropdown arrow on the domain controller to check and see if it worked. If it worked it should look like the screenshot below.
+Once we do that we can use the code provided:
+```bash
+# ----- Edit these Variables for your own Use Case ----- #
+$userPassword   = "Password1"
+$userList = Get-Content .\list.txt
+# ------------------------------------------------------ #
+
+$password = ConvertTo-SecureString $userPassword -AsPlainText -Force
+New-ADOrganizationalUnit -Name Users -ProtectedFromAccidentalDeletion $false
+
+foreach ($n in $USER_FIRST_LAST_LIST) {
+    $first = $n.Split(" ")[0].ToLower()
+    $last = $n.Split(" ")[1].ToLower()
+    $username = "$($first.Substring(0,1))$($last)".ToLower()
+    Write-Host "Creating user: $($username)" -BackgroundColor Black -ForegroundColor Cyan
+    
+    New-AdUser -AccountPassword $password `
+               -GivenName $first `
+               -Surname $last `
+               -DisplayName $username `
+               -Name $username `
+               -EmployeeID $username `
+               -PasswordNeverExpires $true `
+               -Path "ou=Users,$(([ADSI]`"").distinguishedName)" `
+               -Enabled $true
+}
+```
+Make sure that the name of your list is implemented into the code or it won't work. Also make sure that you change to the corresponding directory that you saved the list in then run the code. The code will take a min or two since there is 1000 names on the list. Once it is done we can check the "Active Directory Users and Computers" window then use the dropdown arrow on the domain controller to check and see if it worked. If it worked it should look like the screenshot below.
 
 ![014](https://github.com/isaac-daniel00/HomeLab-ActiveDirectory-Oracle/assets/155948481/a1f82aa5-bd59-40e2-af83-38a50dd5b4a1)
 
