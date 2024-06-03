@@ -140,10 +140,8 @@ Set-ExecutionPolicy Unrestricted
 ```
 Once we do that we can use the code provided:
 ```bash
-# ----- Edit these Variables for your own Use Case ----- #
 $userPassword   = "Password1"
 $userList = Get-Content .\list.txt
-# ------------------------------------------------------ #
 
 $password = ConvertTo-SecureString $userPassword -AsPlainText -Force
 New-ADOrganizationalUnit -Name Users -ProtectedFromAccidentalDeletion $false
