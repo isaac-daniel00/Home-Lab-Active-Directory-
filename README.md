@@ -140,28 +140,42 @@ Set-ExecutionPolicy Unrestricted
 ```
 Once we do that we can use the code provided:
 ```bash
-$userPassword   = "Password1"
-$userList = Get-Content .\list.txt
+# Default password for all users
+$userPassword = "Password1"
 
+# Path to the text file containing user names
+$userList = Get-Content .\list.txt  
+
+# Convert the plain text password to a secure string
 $password = ConvertTo-SecureString $userPassword -AsPlainText -Force
+
+# Create an Organizational Unit (OU) named "Users" in Active Directory
 New-ADOrganizationalUnit -Name Users -ProtectedFromAccidentalDeletion $false
 
-foreach ($n in $USER_FIRST_LAST_LIST) {
+# Loop through each name in the list of users
+foreach ($n in $userList) {
+    # Split each line of the text file into first and last names
     $first = $n.Split(" ")[0].ToLower()
     $last = $n.Split(" ")[1].ToLower()
+    
+    # Generate a username by concatenating the first initial of the first name with the last name, all in lowercase
     $username = "$($first.Substring(0,1))$($last)".ToLower()
+
+    # Print a message to the console indicating the user being created
     Write-Host "Creating user: $($username)" -BackgroundColor Black -ForegroundColor Cyan
     
-    New-AdUser -AccountPassword $password `
-               -GivenName $first `
-               -Surname $last `
-               -DisplayName $username `
-               -Name $username `
-               -EmployeeID $username `
-               -PasswordNeverExpires $true `
-               -Path "ou=Users,$(([ADSI]`"").distinguishedName)" `
-               -Enabled $true
+    # Create the new user in Active Directory with the specified attributes
+    New-AdUser -AccountPassword $password `  # Set the user's password
+               -GivenName $first `  # Set the user's first name
+               -Surname $last `  # Set the user's last name
+               -DisplayName $username `  # Set the display name
+               -Name $username `  # Set the username
+               -EmployeeID $username `  # Set the employee ID (same as username in this case)
+               -PasswordNeverExpires $true `  # Make the password never expire
+               -Path "ou=Users,$(([ADSI]`"").distinguishedName)" `  # Specify the OU path
+               -Enabled $true  # Enable the user account
 }
+
 ```
 Make sure that the name of your list is implemented into the code or it won't work. Also make sure that you change to the corresponding directory that you saved the list in then run the code. The code will take a min or two since there is 1000 names on the list. Once it is done we can check the "Active Directory Users and Computers" window then use the dropdown arrow on the domain controller to check and see if it worked. If it worked it should look like the screenshot below.
 
